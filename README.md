@@ -2,8 +2,6 @@
 
 A clean, client-side password generator with customizable options and strength analysis. Generates secure passwords instantly in your browser.
 
-![Password Generator Screenshot](screenshot.png) _(add screenshot later)_
-
 ## Features
 
 - Custom password length (4-64 characters)
