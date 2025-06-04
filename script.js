@@ -1,156 +1,108 @@
-document.addEventListener('DOMContentLoaded', function() {
-    // DOM Elements
-    const elements = {
-        lengthSlider: document.getElementById('length'),
-        lengthValue: document.getElementById('lengthValue'),
-        uppercase: document.getElementById('uppercase'),
-        lowercase: document.getElementById('lowercase'),
-        numbers: document.getElementById('numbers'),
-        symbols: document.getElementById('symbols'),
-        excludeSimilar: document.getElementById('excludeSimilar'),
-        passwordField: document.getElementById('password'),
-        generateBtn: document.getElementById('generateBtn'),
-        copyBtn: document.getElementById('copyBtn'),
-        refreshBtn: document.getElementById('refreshBtn'),
-        strengthBar: document.getElementById('strengthBar'),
-        strengthLabel: document.getElementById('strengthLabel'),
-        themeToggle: document.getElementById('themeToggle')
-    };
+document.addEventListener("DOMContentLoaded", () => {
+  const passwordField = document.getElementById("password");
+  const generateBtn = document.getElementById("generateBtn");
+  const copyBtn = document.getElementById("copyBtn");
+  const strengthBar = document.getElementById("strengthBar");
+  const strengthLabel = document.getElementById("strengthLabel");
+  const themeToggle = document.getElementById("themeToggle");
 
-    // Character sets
-    const charSets = {
-        uppercase: 'ABCDEFGHJKLMNPQRSTUVWXYZ',
-        lowercase: 'abcdefghijkmnpqrstuvwxyz',
-        numbers: '23456789',
-        symbols: '!@#$%^&*()_+-=[]{}|;:,.<>?',
-        similar: 'il1Lo0O'
-    };
+  const charset = {
+    upper: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+    lower: "abcdefghijklmnopqrstuvwxyz",
+    number: "0123456789",
+    symbol: "@#$",
+  };
 
-    // Initialize
-    updateLengthDisplay();
-    generatePassword();
-    checkThemePreference();
+  function generatePassword() {
+    const length = 16;
+    let all = charset.upper + charset.lower + charset.number + charset.symbol;
+    let password = [
+      randomChar(charset.upper),
+      randomChar(charset.lower),
+      randomChar(charset.number),
+      randomChar(charset.symbol),
+    ];
 
-    // Event Listeners
-    elements.lengthSlider.addEventListener('input', updateLengthDisplay);
-    elements.generateBtn.addEventListener('click', generatePassword);
-    elements.refreshBtn.addEventListener('click', generatePassword);
-    elements.copyBtn.addEventListener('click', copyPassword);
-    elements.themeToggle.addEventListener('click', toggleTheme);
-
-    // Functions
-    function updateLengthDisplay() {
-        elements.lengthValue.textContent = elements.lengthSlider.value;
+    for (let i = 4; i < length; i++) {
+      password.push(randomChar(all));
     }
 
-    function generatePassword() {
-        let charset = '';
-        let password = '';
-        
-        // Build character set based on selected options
-        if (elements.uppercase.checked) charset += charSets.uppercase;
-        if (elements.lowercase.checked) charset += charSets.lowercase;
-        if (elements.numbers.checked) charset += charSets.numbers;
-        if (elements.symbols.checked) charset += charSets.symbols;
-        
-        // If no character types are selected, use all
-        if (!charset) {
-            charset = Object.values(charSets).slice(0, 4).join('');
-            elements.uppercase.checked = true;
-            elements.lowercase.checked = true;
-            elements.numbers.checked = true;
-            elements.symbols.checked = true;
-        }
-        
-        // Exclude similar characters if option is checked
-        if (elements.excludeSimilar.checked) {
-            charset = [...charset].filter(char => !charSets.similar.includes(char)).join('');
-        }
-        
-        // Generate password
-        const length = elements.lengthSlider.value;
-        const array = new Uint32Array(length);
-        window.crypto.getRandomValues(array);
-        
-        for (let i = 0; i < length; i++) {
-            password += charset[array[i] % charset.length];
-        }
-        
-        elements.passwordField.value = password;
-        updatePasswordStrength(password);
-    }
+    password = shuffle(password).join("");
+    passwordField.value = password;
+    updateStrength(password);
+    passwordField.classList.add("pop");
+    setTimeout(() => passwordField.classList.remove("pop"), 300);
+  }
 
-    function updatePasswordStrength(password) {
-        let strength = 0;
-        const length = password.length;
-        
-        // Length contributes to strength
-        if (length >= 8) strength += 1;
-        if (length >= 12) strength += 2;
-        if (length >= 16) strength += 2;
-        
-        // Character variety contributes to strength
-        if (/[A-Z]/.test(password)) strength += 1;
-        if (/[a-z]/.test(password)) strength += 1;
-        if (/[0-9]/.test(password)) strength += 1;
-        if (/[^A-Za-z0-9]/.test(password)) strength += 2;
-        
-        // Update UI
-        elements.strengthBar.className = 'strength-bar';
-        
-        if (strength <= 3) {
-            elements.strengthBar.classList.add('strength-weak');
-            elements.strengthLabel.textContent = 'Weak';
-            elements.strengthLabel.style.color = 'var(--strength-weak)';
-        } else if (strength <= 5) {
-            elements.strengthBar.classList.add('strength-medium');
-            elements.strengthLabel.textContent = 'Medium';
-            elements.strengthLabel.style.color = 'var(--strength-medium)';
-        } else if (strength <= 7) {
-            elements.strengthBar.classList.add('strength-strong');
-            elements.strengthLabel.textContent = 'Strong';
-            elements.strengthLabel.style.color = 'var(--strength-strong)';
-        } else {
-            elements.strengthBar.classList.add('strength-very-strong');
-            elements.strengthLabel.textContent = 'Very Strong';
-            elements.strengthLabel.style.color = 'var(--strength-very-strong)';
-        }
-    }
+  function randomChar(str) {
+    return str[Math.floor(Math.random() * str.length)];
+  }
 
-    function copyPassword() {
-        elements.passwordField.select();
-        document.execCommand('copy');
-        
-        // Visual feedback
-        const originalIcon = elements.copyBtn.innerHTML;
-        elements.copyBtn.innerHTML = '<i class="fas fa-check"></i>';
-        elements.copyBtn.style.backgroundColor = 'var(--success)';
-        
-        setTimeout(() => {
-            elements.copyBtn.innerHTML = originalIcon;
-            elements.copyBtn.style.backgroundColor = '';
-        }, 2000);
-    }
+  function shuffle(array) {
+    return array.sort(() => 0.5 - Math.random());
+  }
 
-    function toggleTheme() {
-        document.body.classList.toggle('dark-mode');
-        localStorage.setItem('darkMode', document.body.classList.contains('dark-mode') ? 'enabled' : 'disabled');
-        updateThemeIcon();
-    }
+  function copyPassword() {
+    navigator.clipboard.writeText(passwordField.value);
+    copyBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+    copyBtn.style.backgroundColor = "var(--success)";
+    setTimeout(() => {
+      copyBtn.innerHTML = '<i class="far fa-copy"></i> Copy Password';
+      copyBtn.style.backgroundColor = "";
+    }, 2000);
+  }
 
-    function updateThemeIcon() {
-        const icon = elements.themeToggle.querySelector('i');
-        if (document.body.classList.contains('dark-mode')) {
-            icon.classList.replace('fa-moon', 'fa-sun');
-        } else {
-            icon.classList.replace('fa-sun', 'fa-moon');
-        }
-    }
+  function updateStrength(password) {
+    let score = 0;
+    if (password.length >= 12) score++;
+    if (/[A-Z]/.test(password)) score++;
+    if (/[a-z]/.test(password)) score++;
+    if (/\d/.test(password)) score++;
+    if (/[@#$]/.test(password)) score++;
 
-    function checkThemePreference() {
-        if (localStorage.getItem('darkMode') === 'enabled') {
-            document.body.classList.add('dark-mode');
-        }
-        updateThemeIcon();
+    strengthBar.className = "strength-bar";
+    if (score >= 5) {
+      strengthBar.classList.add("strength-very-strong");
+      strengthLabel.textContent = "Very Strong";
+    } else if (score === 4) {
+      strengthBar.classList.add("strength-strong");
+      strengthLabel.textContent = "Strong";
+    } else if (score === 3) {
+      strengthBar.classList.add("strength-medium");
+      strengthLabel.textContent = "Medium";
+    } else {
+      strengthBar.classList.add("strength-weak");
+      strengthLabel.textContent = "Weak";
     }
+  }
+
+  function toggleTheme() {
+    document.body.classList.toggle("dark-mode");
+    localStorage.setItem(
+      "darkMode",
+      document.body.classList.contains("dark-mode") ? "enabled" : "disabled"
+    );
+    updateThemeIcon();
+  }
+
+  function updateThemeIcon() {
+    const icon = themeToggle.querySelector("i");
+    icon.className = document.body.classList.contains("dark-mode")
+      ? "fas fa-sun"
+      : "fas fa-moon";
+  }
+
+  function checkThemePreference() {
+    if (localStorage.getItem("darkMode") === "enabled") {
+      document.body.classList.add("dark-mode");
+    }
+    updateThemeIcon();
+  }
+
+  generateBtn.addEventListener("click", generatePassword);
+  copyBtn.addEventListener("click", copyPassword);
+  themeToggle.addEventListener("click", toggleTheme);
+
+  checkThemePreference();
+  generatePassword();
 });
