@@ -34,6 +34,9 @@ SecurePass is fully responsive and works great on mobile, tablet, and desktop.
 
 Toggle between light and dark themes using the moon/sun icon. Your preference is saved automatically.
 
+📸 Screenshot,
+![Screenshot](./Screenshot.png)
+
 ## 🪪 License
 
 MIT License — Free for personal and commercial use.
